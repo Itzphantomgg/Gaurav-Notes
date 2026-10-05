@@ -92,17 +92,24 @@
   // --- Load & Save Data ---
   function loadQuestions() {
     try {
+      const repoQuestions = (typeof notesData !== 'undefined' && Array.isArray(notesData.questions)) ? notesData.questions : [];
       const saved = localStorage.getItem('temp_notes_questions');
+
       if (saved) {
-        questions = JSON.parse(saved);
-      } else if (typeof notesData !== 'undefined' && Array.isArray(notesData.questions)) {
-        questions = [...notesData.questions];
+        const parsed = JSON.parse(saved);
+        // If the repository questions.js has more questions or updated data, prefer repo data
+        if (repoQuestions.length >= parsed.length && repoQuestions.length > 0) {
+          questions = [...repoQuestions];
+          saveQuestions();
+        } else {
+          questions = parsed;
+        }
       } else {
-        questions = [];
+        questions = [...repoQuestions];
       }
     } catch (e) {
       console.warn('Could not load saved questions:', e);
-      questions = [];
+      questions = (typeof notesData !== 'undefined' && notesData.questions) || [];
     }
   }
 
