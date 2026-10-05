@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Temp Notes - Principles of Management</title>
-  <meta name="description" content="Clean notes and study reference for Principles of Management." />
+  <meta name="description" content="Clean OLED Black study notes for Principles of Management." />
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -13,13 +13,13 @@
   
   <!-- Markdown parser & Syntax Highlighter -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 
-  <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="style.css" />
+  <!-- Main Stylesheet (OLED Black) -->
+  <link rel="stylesheet" href="style.css?v=2" />
 </head>
-<body data-theme="dark">
+<body data-theme="oled">
   <div class="app-layout">
     <!-- Mobile Header -->
     <header class="mobile-topbar">
@@ -28,11 +28,11 @@
       </button>
       <div class="mobile-brand">
         <span class="brand-title">Temp Notes</span>
-        <span class="subject-tag">PM</span>
+        <span class="subject-chip">PM</span>
       </div>
-      <button id="themeToggleMobile" class="icon-btn" aria-label="Toggle Theme">
-        <svg class="theme-sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-        <svg class="theme-moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+      <button class="action-btn primary small" onclick="window.openAddQuestionModal && window.openAddQuestionModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        <span>Add</span>
       </button>
     </header>
 
@@ -50,10 +50,6 @@
           </div>
           <p class="brand-subtitle">Principles of Management</p>
         </div>
-        <button id="themeToggle" class="icon-btn desktop-only" title="Toggle Dark/Light Mode">
-          <svg class="theme-sun-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-          <svg class="theme-moon-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-        </button>
       </div>
 
       <!-- Small Profile Section -->
@@ -79,8 +75,9 @@
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
         </div>
-        <button id="addQuestionBtn" class="add-q-btn" title="Add New Question">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        
+        <button id="addQuestionBtn" class="add-q-btn" title="Add New Question" onclick="window.openAddQuestionModal && window.openAddQuestionModal()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
           <span>Add Question</span>
         </button>
       </div>
@@ -110,7 +107,7 @@
           </div>
         </div>
         <div class="footer-links">
-          <button id="exportCodeBtn" class="text-link-btn" title="Export questions.js code">Export Code</button>
+          <button id="exportCodeBtn" class="text-link-btn" title="Export code">Export Code</button>
           <button id="resetProgressBtn" class="text-link-btn">Reset</button>
         </div>
       </div>
@@ -118,22 +115,22 @@
 
     <!-- Main Content Area -->
     <main class="main-content">
-      <!-- Minimalist Top Navigation Header (No Q.1, Q.2 pills) -->
+      <!-- Minimalist Top Navigation Header -->
       <header class="main-topbar">
         <div class="topbar-left">
           <span class="subject-breadcrumb">Principles of Management</span>
         </div>
         <div class="topbar-right">
-          <button id="editCurrentQBtn" class="action-btn" title="Edit this question">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+          <button id="editCurrentQBtn" class="action-btn" title="Edit this question" onclick="window.openEditQuestionModal && window.openEditQuestionModal()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
             <span>Edit Note</span>
           </button>
           <button id="copyShareBtn" class="action-btn" title="Copy link">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
             <span>Share</span>
           </button>
           <button id="printBtn" class="action-btn" title="Print this note">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
             <span>Print</span>
           </button>
         </div>
@@ -141,8 +138,8 @@
 
       <!-- Scrollable Container with Smooth Animations -->
       <div class="content-scroll" id="contentScroll">
-        <!-- Rendered Note Card -->
-        <article class="note-card" id="noteCard">
+        <!-- Rendered Note Card (Hidden initially if 0 questions) -->
+        <article class="note-card" id="noteCard" style="display: none;">
           <!-- Question Meta Bar -->
           <div class="note-meta-bar">
             <div class="meta-left">
@@ -161,7 +158,7 @@
           </div>
 
           <!-- Question Title -->
-          <h2 class="question-heading" id="questionHeading">Loading...</h2>
+          <h2 class="question-heading" id="questionHeading"></h2>
 
           <div class="divider"></div>
 
@@ -173,7 +170,7 @@
           <!-- Question Footer Navigation -->
           <footer class="note-footer">
             <button class="nav-btn prev-btn" id="prevBtn" title="Previous Question">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
               <div class="nav-text-block">
                 <span class="nav-sub">Previous</span>
                 <span class="nav-label" id="prevBtnLabel">Q.1</span>
@@ -181,7 +178,7 @@
             </button>
 
             <div class="keyboard-hints desktop-only">
-              <span>Navigate with <kbd>&larr;</kbd> and <kbd>&rarr;</kbd></span>
+              <span>Use <kbd>&larr;</kbd> and <kbd>&rarr;</kbd> to navigate</span>
             </div>
 
             <button class="nav-btn next-btn" id="nextBtn" title="Next Question">
@@ -189,20 +186,20 @@
                 <span class="nav-sub">Next</span>
                 <span class="nav-label" id="nextBtnLabel">Q.2</span>
               </div>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
             </button>
           </footer>
         </article>
 
-        <!-- Empty State Card (When no questions exist) -->
-        <div class="empty-state-card" id="emptyStateCard" style="display: none;">
+        <!-- Empty State Card (Displayed when no questions exist) -->
+        <div class="empty-state-card" id="emptyStateCard">
           <div class="empty-icon-wrap">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
           </div>
           <h3>No Questions Added Yet</h3>
           <p>Your Principles of Management notebook is ready. Click below to add your first question.</p>
-          <button id="emptyAddBtn" class="action-btn primary large">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+          <button id="emptyAddBtn" class="action-btn primary large" onclick="window.openAddQuestionModal && window.openAddQuestionModal()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
             <span>Add First Question</span>
           </button>
         </div>
@@ -216,9 +213,9 @@
       <div class="modal-header">
         <div class="modal-title-wrap">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
-          <h3 id="modalHeading">Edit Question</h3>
+          <h3 id="modalHeading">Add Question</h3>
         </div>
-        <button class="modal-close" id="closeModalBtn" title="Close">
+        <button class="modal-close" id="closeModalBtn" title="Close" type="button">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
       </div>
@@ -246,18 +243,18 @@
             <label for="inputQuestionAnswer">Answer / Notes (Supports Markdown)</label>
             <span class="label-hint">Use ## for Headings, - for bullets</span>
           </div>
-          <textarea id="inputQuestionAnswer" rows="10" placeholder="Write or paste notes here..."></textarea>
+          <textarea id="inputQuestionAnswer" rows="10" placeholder="Write or paste your notes here..."></textarea>
         </div>
 
         <div class="modal-actions">
           <button type="button" id="deleteQuestionBtn" class="action-btn danger" style="display: none;">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
             <span>Delete</span>
           </button>
           <div class="right-actions">
             <button type="button" id="cancelModalBtn" class="action-btn">Cancel</button>
             <button type="submit" class="action-btn primary">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"></polyline></svg>
               <span>Save Question</span>
             </button>
           </div>
@@ -274,13 +271,13 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
           <h3>Profile Name</h3>
         </div>
-        <button class="modal-close" id="closeProfileModalBtn">
+        <button class="modal-close" id="closeProfileModalBtn" type="button">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
       </div>
       <form id="profileForm" class="modal-body">
         <div class="form-group">
-          <label for="inputProfileName">Your Friend's Name</label>
+          <label for="inputProfileName">Student / Friend Name</label>
           <input type="text" id="inputProfileName" placeholder="e.g. Gaurav" required />
         </div>
         <div class="modal-actions right-only">
@@ -299,16 +296,16 @@
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
           <h3>Export questions.js</h3>
         </div>
-        <button class="modal-close" id="closeExportModalBtn">
+        <button class="modal-close" id="closeExportModalBtn" type="button">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         </button>
       </div>
       <div class="modal-body">
-        <p class="export-desc">Copy this code into your <code>questions.js</code> file to permanently commit your questions to GitHub:</p>
+        <p class="export-desc">Copy this code into your <code>questions.js</code> file to permanently commit your notes to GitHub:</p>
         <textarea id="exportCodeTextarea" rows="12" readonly></textarea>
         <div class="modal-actions right-only">
           <button type="button" id="copyExportCodeBtn" class="action-btn primary">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
             <span>Copy Code</span>
           </button>
         </div>
@@ -319,8 +316,8 @@
   <!-- Toast Notification -->
   <div class="toast" id="toastNotification">Updated</div>
 
-  <!-- Scripts -->
-  <script src="questions.js"></script>
-  <script src="app.js"></script>
+  <!-- Scripts with Cache-Busting Version Query -->
+  <script src="questions.js?v=2"></script>
+  <script src="app.js?v=2"></script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 /**
- * Temp Notes - Application Logic
+ * Temp Notes - OLED Black Edition
  * Subject: Principles of Management (PM)
  */
 
@@ -11,154 +11,136 @@
   let currentIndex = 0;
   let currentCategory = 'all';
   let searchQuery = '';
-  let completedSet = new Set(JSON.parse(localStorage.getItem('temp_notes_completed') || '[]'));
+  let completedSet = new Set();
 
-  // --- DOM Elements ---
-  const sidebar = document.getElementById('sidebar');
-  const sidebarBackdrop = document.getElementById('sidebarBackdrop');
-  const sidebarToggleBtn = document.getElementById('sidebarToggleBtn');
-  
-  const themeToggle = document.getElementById('themeToggle');
-  const themeToggleMobile = document.getElementById('themeToggleMobile');
-
-  const profileAvatar = document.getElementById('profileAvatar');
-  const profileNameDisplay = document.getElementById('profileNameDisplay');
-  const editProfileBtn = document.getElementById('editProfileBtn');
-
-  const searchInput = document.getElementById('searchInput');
-  const clearSearchBtn = document.getElementById('clearSearchBtn');
-  const addQuestionBtn = document.getElementById('addQuestionBtn');
-  const categoryFilters = document.getElementById('categoryFilters');
-  const questionList = document.getElementById('questionList');
-  const listStats = document.getElementById('listStats');
-
-  const noteCard = document.getElementById('noteCard');
-  const emptyStateCard = document.getElementById('emptyStateCard');
-  const emptyAddBtn = document.getElementById('emptyAddBtn');
-  const contentScroll = document.getElementById('contentScroll');
-
-  const currentQBadge = document.getElementById('currentQBadge');
-  const currentTopicBadge = document.getElementById('currentTopicBadge');
-  const questionHeading = document.getElementById('questionHeading');
-  const answerContainer = document.getElementById('answerContainer');
-  const markDoneCheckbox = document.getElementById('markDoneCheckbox');
-
-  const prevBtn = document.getElementById('prevBtn');
-  const nextBtn = document.getElementById('nextBtn');
-  const prevBtnLabel = document.getElementById('prevBtnLabel');
-  const nextBtnLabel = document.getElementById('nextBtnLabel');
-
-  const editCurrentQBtn = document.getElementById('editCurrentQBtn');
-  const copyShareBtn = document.getElementById('copyShareBtn');
-  const printBtn = document.getElementById('printBtn');
-
-  const progressText = document.getElementById('progressText');
-  const progressFill = document.getElementById('progressFill');
-  const resetProgressBtn = document.getElementById('resetProgressBtn');
-  const exportCodeBtn = document.getElementById('exportCodeBtn');
-
-  // Modals
-  const questionEditModal = document.getElementById('questionEditModal');
-  const modalHeading = document.getElementById('modalHeading');
-  const questionForm = document.getElementById('questionForm');
-  const editQuestionIndex = document.getElementById('editQuestionIndex');
-  const inputQuestionBadge = document.getElementById('inputQuestionBadge');
-  const inputQuestionCategory = document.getElementById('inputQuestionCategory');
-  const inputQuestionTitle = document.getElementById('inputQuestionTitle');
-  const inputQuestionAnswer = document.getElementById('inputQuestionAnswer');
-  const deleteQuestionBtn = document.getElementById('deleteQuestionBtn');
-  const closeModalBtn = document.getElementById('closeModalBtn');
-  const cancelModalBtn = document.getElementById('cancelModalBtn');
-
-  const profileModal = document.getElementById('profileModal');
-  const profileForm = document.getElementById('profileForm');
-  const inputProfileName = document.getElementById('inputProfileName');
-  const closeProfileModalBtn = document.getElementById('closeProfileModalBtn');
-  const cancelProfileBtn = document.getElementById('cancelProfileBtn');
-
-  const exportModal = document.getElementById('exportModal');
-  const exportCodeTextarea = document.getElementById('exportCodeTextarea');
-  const closeExportModalBtn = document.getElementById('closeExportModalBtn');
-  const copyExportCodeBtn = document.getElementById('copyExportCodeBtn');
-
-  const toastNotification = document.getElementById('toastNotification');
-
-  // --- Initialization ---
-  function init() {
-    initTheme();
-    loadProfile();
-    loadQuestions();
-    renderCategoryFilters();
-    renderQuestionList();
-    updateProgress();
-
-    // Select initial question or load from URL hash
-    loadQuestionFromHash();
-
-    setupEventListeners();
+  try {
+    const savedCompleted = localStorage.getItem('temp_notes_completed');
+    if (savedCompleted) {
+      completedSet = new Set(JSON.parse(savedCompleted));
+    }
+  } catch (e) {
+    completedSet = new Set();
   }
 
-  // --- Theme Toggle ---
-  function initTheme() {
-    const savedTheme = localStorage.getItem('temp_notes_theme') || 'dark';
-    document.body.setAttribute('data-theme', savedTheme);
+  // --- Safe DOM Helper ---
+  const $ = (id) => document.getElementById(id);
+
+  // --- Global Functions (Accessible via inline onclick as fallback) ---
+  window.openAddQuestionModal = function () {
+    const editQuestionIndex = $('editQuestionIndex');
+    const modalHeading = $('modalHeading');
+    const inputQuestionBadge = $('inputQuestionBadge');
+    const inputQuestionCategory = $('inputQuestionCategory');
+    const inputQuestionTitle = $('inputQuestionTitle');
+    const inputQuestionAnswer = $('inputQuestionAnswer');
+    const deleteQuestionBtn = $('deleteQuestionBtn');
+    const questionEditModal = $('questionEditModal');
+
+    if (editQuestionIndex) editQuestionIndex.value = '-1';
+    if (modalHeading) modalHeading.textContent = 'Add Question';
+    if (inputQuestionBadge) inputQuestionBadge.value = `Q.${questions.length + 1}`;
+    if (inputQuestionCategory) inputQuestionCategory.value = currentCategory === 'all' ? 'Unit 1' : currentCategory;
+    if (inputQuestionTitle) inputQuestionTitle.value = '';
+    if (inputQuestionAnswer) inputQuestionAnswer.value = '';
+    if (deleteQuestionBtn) deleteQuestionBtn.style.display = 'none';
+
+    if (questionEditModal) {
+      questionEditModal.classList.add('show');
+      setTimeout(() => {
+        if (inputQuestionTitle) inputQuestionTitle.focus();
+      }, 50);
+    }
+  };
+
+  window.openEditQuestionModal = function () {
+    if (questions.length === 0 || currentIndex < 0 || currentIndex >= questions.length) {
+      window.openAddQuestionModal();
+      return;
+    }
+
+    const q = questions[currentIndex];
+    const editQuestionIndex = $('editQuestionIndex');
+    const modalHeading = $('modalHeading');
+    const inputQuestionBadge = $('inputQuestionBadge');
+    const inputQuestionCategory = $('inputQuestionCategory');
+    const inputQuestionTitle = $('inputQuestionTitle');
+    const inputQuestionAnswer = $('inputQuestionAnswer');
+    const deleteQuestionBtn = $('deleteQuestionBtn');
+    const questionEditModal = $('questionEditModal');
+
+    if (editQuestionIndex) editQuestionIndex.value = String(currentIndex);
+    if (modalHeading) modalHeading.textContent = `Edit ${q.badge || 'Question'}`;
+    if (inputQuestionBadge) inputQuestionBadge.value = q.badge || `Q.${currentIndex + 1}`;
+    if (inputQuestionCategory) inputQuestionCategory.value = q.category || '';
+    if (inputQuestionTitle) inputQuestionTitle.value = q.title || '';
+    if (inputQuestionAnswer) inputQuestionAnswer.value = q.answer || '';
+    if (deleteQuestionBtn) deleteQuestionBtn.style.display = 'inline-flex';
+
+    if (questionEditModal) {
+      questionEditModal.classList.add('show');
+      setTimeout(() => {
+        if (inputQuestionTitle) inputQuestionTitle.focus();
+      }, 50);
+    }
+  };
+
+  function closeQuestionModal() {
+    const modal = $('questionEditModal');
+    if (modal) modal.classList.remove('show');
   }
 
-  function toggleTheme() {
-    const current = document.body.getAttribute('data-theme') || 'dark';
-    const next = current === 'dark' ? 'light' : 'dark';
-    document.body.setAttribute('data-theme', next);
-    localStorage.setItem('temp_notes_theme', next);
+  // --- Load & Save Data ---
+  function loadQuestions() {
+    try {
+      const saved = localStorage.getItem('temp_notes_questions');
+      if (saved) {
+        questions = JSON.parse(saved);
+      } else if (typeof notesData !== 'undefined' && Array.isArray(notesData.questions)) {
+        questions = [...notesData.questions];
+      } else {
+        questions = [];
+      }
+    } catch (e) {
+      console.warn('Could not load saved questions:', e);
+      questions = [];
+    }
+  }
 
-    const hljsTheme = document.getElementById('hljs-theme');
-    if (hljsTheme) {
-      hljsTheme.href = next === 'dark' 
-        ? 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css'
-        : 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css';
+  function saveQuestions() {
+    try {
+      localStorage.setItem('temp_notes_questions', JSON.stringify(questions));
+    } catch (e) {
+      console.error('Failed to save to localStorage:', e);
     }
   }
 
   // --- Profile Management ---
   function loadProfile() {
     const name = localStorage.getItem('temp_notes_profile_name') || 'Friend';
-    profileNameDisplay.textContent = name;
-    profileAvatar.textContent = name.trim().charAt(0).toUpperCase() || 'U';
+    const profileNameDisplay = $('profileNameDisplay');
+    const profileAvatar = $('profileAvatar');
+    if (profileNameDisplay) profileNameDisplay.textContent = name;
+    if (profileAvatar) profileAvatar.textContent = name.trim().charAt(0).toUpperCase() || 'U';
   }
 
   function saveProfile(name) {
-    const cleanName = name.trim() || 'Friend';
+    const cleanName = (name && name.trim()) || 'Friend';
     localStorage.setItem('temp_notes_profile_name', cleanName);
     loadProfile();
-    showToast('Name updated');
+    showToast('Name saved');
   }
 
-  // --- Load & Store Questions ---
-  function loadQuestions() {
-    const saved = localStorage.getItem('temp_notes_questions');
-    if (saved) {
-      try {
-        questions = JSON.parse(saved);
-      } catch (e) {
-        questions = (notesData && notesData.questions) || [];
-      }
-    } else {
-      questions = (notesData && notesData.questions) || [];
-    }
-  }
-
-  function saveQuestions() {
-    localStorage.setItem('temp_notes_questions', JSON.stringify(questions));
-  }
-
-  // --- Category Filters ---
+  // --- Render Categories ---
   function renderCategoryFilters() {
+    const categoryFilters = $('categoryFilters');
+    if (!categoryFilters) return;
+
     const categories = ['all', ...new Set(questions.map(q => q.category).filter(Boolean))];
     categoryFilters.innerHTML = '';
 
     categories.forEach(cat => {
       const btn = document.createElement('button');
       btn.className = `filter-pill ${cat === currentCategory ? 'active' : ''}`;
-      btn.dataset.category = cat;
       btn.textContent = cat === 'all' ? 'All' : cat;
       btn.addEventListener('click', () => {
         currentCategory = cat;
@@ -169,15 +151,19 @@
     });
   }
 
-  // --- Sidebar Questions List ---
+  // --- Render Questions List (Sidebar) ---
   function renderQuestionList() {
+    const questionList = $('questionList');
+    const listStats = $('listStats');
+    if (!questionList) return;
+
     questionList.innerHTML = '';
 
     const filtered = questions.filter((q) => {
       const matchesCat = currentCategory === 'all' || q.category === currentCategory;
       const qLower = searchQuery.toLowerCase();
       const matchesSearch = !qLower || 
-        q.title.toLowerCase().includes(qLower) || 
+        (q.title && q.title.toLowerCase().includes(qLower)) || 
         (q.badge && q.badge.toLowerCase().includes(qLower)) ||
         (q.category && q.category.toLowerCase().includes(qLower)) ||
         (q.answer && q.answer.toLowerCase().includes(qLower));
@@ -185,7 +171,9 @@
       return matchesCat && matchesSearch;
     });
 
-    listStats.textContent = `${filtered.length} Question${filtered.length === 1 ? '' : 's'}`;
+    if (listStats) {
+      listStats.textContent = `${filtered.length} Question${filtered.length === 1 ? '' : 's'}`;
+    }
 
     if (questions.length === 0) {
       questionList.innerHTML = `<div style="padding: 16px 8px; text-align: center; color: var(--text-faint); font-size: 0.8rem;">No questions added yet.</div>`;
@@ -207,7 +195,7 @@
       btn.innerHTML = `
         <span class="q-item-num">${escapeHTML(q.badge || 'Q.' + (originalIdx + 1))}</span>
         <div class="q-item-info">
-          <div class="q-item-title">${escapeHTML(q.title)}</div>
+          <div class="q-item-title">${escapeHTML(q.title || 'Untitled')}</div>
           <div class="q-item-meta">
             <span class="q-item-category">${escapeHTML(q.category || 'General')}</span>
             <span class="q-item-done-icon">Reviewed</span>
@@ -241,12 +229,14 @@
 
     hideEmptyState();
 
-    // Trigger smooth fade/slide animation
-    noteCard.style.animation = 'none';
-    noteCard.offsetHeight; // trigger reflow
-    noteCard.style.animation = null;
+    const noteCard = $('noteCard');
+    if (noteCard) {
+      noteCard.style.animation = 'none';
+      void noteCard.offsetHeight; // trigger reflow
+      noteCard.style.animation = null;
+    }
 
-    // Update URL hash
+    // URL Hash update
     if (q.badge) {
       const slug = q.badge.toLowerCase().replace(/[^a-z0-9]/g, '');
       history.replaceState(null, null, `#${slug || 'q' + (currentIndex + 1)}`);
@@ -254,74 +244,103 @@
       history.replaceState(null, null, `#q${currentIndex + 1}`);
     }
 
-    // Update active highlight in sidebar list
-    Array.from(questionList.querySelectorAll('.q-item-btn')).forEach((btn, i) => {
-      const numSpan = btn.querySelector('.q-item-num');
-      const isActive = numSpan && (numSpan.textContent === q.badge || numSpan.textContent === `Q.${currentIndex + 1}`);
-      btn.classList.toggle('active', isActive);
-    });
-
-    // Render Question Details
-    currentQBadge.textContent = q.badge || `Q.${currentIndex + 1}`;
-    currentTopicBadge.textContent = q.category || 'Principles of Management';
-    questionHeading.textContent = q.title;
-
-    // Render markdown answer
-    if (window.marked) {
-      answerContainer.innerHTML = marked.parse(q.answer || '*No notes written for this question yet.*');
-    } else {
-      answerContainer.innerHTML = `<pre>${escapeHTML(q.answer || '')}</pre>`;
-    }
-
-    // Code syntax highlighting
-    if (window.hljs) {
-      answerContainer.querySelectorAll('pre code').forEach((block) => {
-        hljs.highlightElement(block);
+    // Sidebar active classes
+    const questionList = $('questionList');
+    if (questionList) {
+      Array.from(questionList.querySelectorAll('.q-item-btn')).forEach((btn, i) => {
+        const numSpan = btn.querySelector('.q-item-num');
+        const isActive = numSpan && (numSpan.textContent === q.badge || numSpan.textContent === `Q.${currentIndex + 1}`);
+        btn.classList.toggle('active', isActive);
       });
     }
 
-    // Mark Done checkbox
-    markDoneCheckbox.checked = completedSet.has(q.id);
+    // Question Meta
+    const currentQBadge = $('currentQBadge');
+    const currentTopicBadge = $('currentTopicBadge');
+    const questionHeading = $('questionHeading');
+    const answerContainer = $('answerContainer');
+    const markDoneCheckbox = $('markDoneCheckbox');
 
-    // Update Next & Prev buttons
+    if (currentQBadge) currentQBadge.textContent = q.badge || `Q.${currentIndex + 1}`;
+    if (currentTopicBadge) currentTopicBadge.textContent = q.category || 'Principles of Management';
+    if (questionHeading) questionHeading.textContent = q.title || 'Untitled';
+
+    // Render Answer Markdown
+    if (answerContainer) {
+      if (window.marked && typeof marked.parse === 'function') {
+        answerContainer.innerHTML = marked.parse(q.answer || '*No notes written for this question yet.*');
+      } else {
+        answerContainer.innerHTML = `<pre>${escapeHTML(q.answer || '')}</pre>`;
+      }
+
+      // Syntax highlight
+      if (window.hljs) {
+        answerContainer.querySelectorAll('pre code').forEach((block) => {
+          hljs.highlightElement(block);
+        });
+      }
+    }
+
+    // Checkbox
+    if (markDoneCheckbox) {
+      markDoneCheckbox.checked = completedSet.has(q.id);
+    }
+
+    // Nav buttons
     updateNavigationButtons();
 
-    // Scroll smoothly to top
+    // Scroll to top
+    const contentScroll = $('contentScroll');
     if (contentScroll) contentScroll.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function updateNavigationButtons() {
-    if (currentIndex > 0) {
-      prevBtn.disabled = false;
-      const prevQ = questions[currentIndex - 1];
-      prevBtnLabel.textContent = prevQ.badge || `Q.${currentIndex}`;
-    } else {
-      prevBtn.disabled = true;
-      prevBtnLabel.textContent = 'Start';
+    const prevBtn = $('prevBtn');
+    const nextBtn = $('nextBtn');
+    const prevBtnLabel = $('prevBtnLabel');
+    const nextBtnLabel = $('nextBtnLabel');
+
+    if (prevBtn) {
+      if (currentIndex > 0) {
+        prevBtn.disabled = false;
+        const prevQ = questions[currentIndex - 1];
+        if (prevBtnLabel) prevBtnLabel.textContent = prevQ.badge || `Q.${currentIndex}`;
+      } else {
+        prevBtn.disabled = true;
+        if (prevBtnLabel) prevBtnLabel.textContent = 'Start';
+      }
     }
 
-    if (currentIndex < questions.length - 1) {
-      nextBtn.disabled = false;
-      const nextQ = questions[currentIndex + 1];
-      nextBtnLabel.textContent = nextQ.badge || `Q.${currentIndex + 2}`;
-    } else {
-      nextBtn.disabled = true;
-      nextBtnLabel.textContent = 'End';
+    if (nextBtn) {
+      if (currentIndex < questions.length - 1) {
+        nextBtn.disabled = false;
+        const nextQ = questions[currentIndex + 1];
+        if (nextBtnLabel) nextBtnLabel.textContent = nextQ.badge || `Q.${currentIndex + 2}`;
+      } else {
+        nextBtn.disabled = true;
+        if (nextBtnLabel) nextBtnLabel.textContent = 'End';
+      }
     }
   }
 
   function showEmptyState() {
-    noteCard.style.display = 'none';
-    emptyStateCard.style.display = 'block';
-    editCurrentQBtn.style.display = 'none';
-    currentQBadge.textContent = 'Q.0';
-    currentTopicBadge.textContent = 'None';
+    const noteCard = $('noteCard');
+    const emptyStateCard = $('emptyStateCard');
+    const editCurrentQBtn = $('editCurrentQBtn');
+
+    if (noteCard) noteCard.style.display = 'none';
+    if (emptyStateCard) emptyStateCard.style.display = 'block';
+    if (editCurrentQBtn) editCurrentQBtn.style.display = 'none';
   }
 
   function hideEmptyState() {
-    noteCard.style.display = 'block';
-    emptyStateCard.style.display = 'none';
-    editCurrentQBtn.style.display = 'inline-flex';
+    const noteCard = $('noteCard');
+    const emptyStateCard = $('emptyStateCard');
+    const editCurrentQBtn = $('editCurrentQBtn');
+
+    if (noteCard) noteCard.style.display = 'block';
+    if (emptyStateCard) emptyStateCard.style.display = 'none';
+    if (editCurrentQBtn) editCurrentQBtn.style.display = 'inline-flex';
   }
 
   // --- Mark Done / Progress ---
@@ -330,85 +349,71 @@
     const q = questions[currentIndex];
     if (!q) return;
 
-    if (markDoneCheckbox.checked) {
+    const markDoneCheckbox = $('markDoneCheckbox');
+    if (markDoneCheckbox && markDoneCheckbox.checked) {
       completedSet.add(q.id);
-      showToast(`Marked as reviewed`);
+      showToast('Marked as reviewed');
     } else {
       completedSet.delete(q.id);
     }
 
-    localStorage.setItem('temp_notes_completed', JSON.stringify(Array.from(completedSet)));
+    try {
+      localStorage.setItem('temp_notes_completed', JSON.stringify(Array.from(completedSet)));
+    } catch (e) {}
+
     updateProgress();
     renderQuestionList();
   }
 
   function updateProgress() {
+    const progressText = $('progressText');
+    const progressFill = $('progressFill');
     const total = questions.length;
     const completed = Array.from(completedSet).filter(id => questions.some(q => q.id === id)).length;
     const pct = total === 0 ? 0 : Math.round((completed / total) * 100);
 
-    progressText.textContent = `${completed} / ${total}`;
-    progressFill.style.width = `${pct}%`;
+    if (progressText) progressText.textContent = `${completed} / ${total}`;
+    if (progressFill) progressFill.style.width = `${pct}%`;
   }
 
   function resetProgress() {
-    if (confirm('Reset review progress?')) {
+    if (confirm('Reset reviewed progress?')) {
       completedSet.clear();
-      localStorage.setItem('temp_notes_completed', JSON.stringify([]));
+      try {
+        localStorage.setItem('temp_notes_completed', JSON.stringify([]));
+      } catch (e) {}
       updateProgress();
       renderQuestionList();
-      markDoneCheckbox.checked = false;
+      const markDoneCheckbox = $('markDoneCheckbox');
+      if (markDoneCheckbox) markDoneCheckbox.checked = false;
       showToast('Progress reset');
     }
   }
 
-  // --- Add / Edit Question Modal (Pencil) ---
-  function openAddModal() {
-    editQuestionIndex.value = '-1';
-    modalHeading.textContent = 'Add Question';
-    inputQuestionBadge.value = `Q.${questions.length + 1}`;
-    inputQuestionCategory.value = currentCategory === 'all' ? 'Unit 1' : currentCategory;
-    inputQuestionTitle.value = '';
-    inputQuestionAnswer.value = '';
-    deleteQuestionBtn.style.display = 'none';
-    questionEditModal.classList.add('show');
-    inputQuestionTitle.focus();
-  }
+  // --- Save / Delete Form Handler ---
+  function handleSaveQuestion(e) {
+    if (e && e.preventDefault) e.preventDefault();
 
-  function openEditModal() {
-    if (questions.length === 0 || currentIndex < 0 || currentIndex >= questions.length) {
-      openAddModal();
+    const editQuestionIndex = $('editQuestionIndex');
+    const inputQuestionBadge = $('inputQuestionBadge');
+    const inputQuestionCategory = $('inputQuestionCategory');
+    const inputQuestionTitle = $('inputQuestionTitle');
+    const inputQuestionAnswer = $('inputQuestionAnswer');
+
+    const idx = editQuestionIndex ? parseInt(editQuestionIndex.value, 10) : -1;
+    const badge = (inputQuestionBadge && inputQuestionBadge.value.trim()) || `Q.${questions.length + 1}`;
+    const category = (inputQuestionCategory && inputQuestionCategory.value.trim()) || 'Principles of Management';
+    const title = (inputQuestionTitle && inputQuestionTitle.value.trim()) || '';
+    const answer = (inputQuestionAnswer && inputQuestionAnswer.value.trim()) || '';
+
+    if (!title) {
+      alert('Please enter a question title.');
+      if (inputQuestionTitle) inputQuestionTitle.focus();
       return;
     }
 
-    const q = questions[currentIndex];
-    editQuestionIndex.value = currentIndex;
-    modalHeading.textContent = `Edit ${q.badge || 'Question'}`;
-    inputQuestionBadge.value = q.badge || `Q.${currentIndex + 1}`;
-    inputQuestionCategory.value = q.category || '';
-    inputQuestionTitle.value = q.title || '';
-    inputQuestionAnswer.value = q.answer || '';
-    deleteQuestionBtn.style.display = 'inline-flex';
-    questionEditModal.classList.add('show');
-    inputQuestionTitle.focus();
-  }
-
-  function closeQuestionModal() {
-    questionEditModal.classList.remove('show');
-  }
-
-  function handleSaveQuestion(e) {
-    e.preventDefault();
-    const idx = parseInt(editQuestionIndex.value, 10);
-    const badge = inputQuestionBadge.value.trim() || `Q.${questions.length + 1}`;
-    const category = inputQuestionCategory.value.trim() || 'Principles of Management';
-    const title = inputQuestionTitle.value.trim();
-    const answer = inputQuestionAnswer.value.trim();
-
-    if (!title) return;
-
     if (idx >= 0 && idx < questions.length) {
-      // Update existing
+      // Edit existing
       questions[idx] = {
         ...questions[idx],
         badge,
@@ -422,7 +427,7 @@
       selectQuestion(idx);
       showToast('Question updated');
     } else {
-      // Add new
+      // Add new question
       const newQ = {
         id: Date.now(),
         badge,
@@ -443,7 +448,9 @@
   }
 
   function handleDeleteQuestion() {
-    const idx = parseInt(editQuestionIndex.value, 10);
+    const editQuestionIndex = $('editQuestionIndex');
+    const idx = editQuestionIndex ? parseInt(editQuestionIndex.value, 10) : -1;
+
     if (idx >= 0 && idx < questions.length) {
       if (confirm(`Delete ${questions[idx].badge || 'this question'}?`)) {
         completedSet.delete(questions[idx].id);
@@ -466,8 +473,11 @@
 
   // --- Export Code Modal ---
   function openExportModal() {
+    const exportCodeTextarea = $('exportCodeTextarea');
+    const exportModal = $('exportModal');
+
     const code = `/**
- * Temp Notes - Exported Questions
+ * Temp Notes - Questions Database
  * Subject: Principles of Management (PM)
  */
 
@@ -480,8 +490,8 @@ const notesData = {
   questions: ${JSON.stringify(questions, null, 2)}
 };
 `;
-    exportCodeTextarea.value = code;
-    exportModal.classList.add('show');
+    if (exportCodeTextarea) exportCodeTextarea.value = code;
+    if (exportModal) exportModal.classList.add('show');
   }
 
   // --- Hash Routing ---
@@ -506,28 +516,35 @@ const notesData = {
 
   // --- Mobile Drawer ---
   function openSidebar() {
-    sidebar.classList.add('open');
-    sidebarBackdrop.classList.add('show');
+    const sidebar = $('sidebar');
+    const sidebarBackdrop = $('sidebarBackdrop');
+    if (sidebar) sidebar.classList.add('open');
+    if (sidebarBackdrop) sidebarBackdrop.classList.add('show');
   }
 
   function closeSidebar() {
-    sidebar.classList.remove('open');
-    sidebarBackdrop.classList.remove('show');
+    const sidebar = $('sidebar');
+    const sidebarBackdrop = $('sidebarBackdrop');
+    if (sidebar) sidebar.classList.remove('open');
+    if (sidebarBackdrop) sidebarBackdrop.classList.remove('show');
   }
 
   // --- Toast ---
   let toastTimer = null;
   function showToast(msg) {
+    const toast = $('toastNotification');
+    if (!toast) return;
     if (toastTimer) clearTimeout(toastTimer);
-    toastNotification.textContent = msg;
-    toastNotification.classList.add('show');
+    toast.textContent = msg;
+    toast.classList.add('show');
     toastTimer = setTimeout(() => {
-      toastNotification.classList.remove('show');
+      toast.classList.remove('show');
     }, 2200);
   }
 
   function escapeHTML(str) {
-    return str
+    if (!str) return '';
+    return String(str)
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
@@ -537,92 +554,139 @@ const notesData = {
 
   // --- Setup Event Listeners ---
   function setupEventListeners() {
-    // Theme toggle
-    if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
-    if (themeToggleMobile) themeToggleMobile.addEventListener('click', toggleTheme);
-
-    // Sidebar Mobile toggle
+    const sidebarToggleBtn = $('sidebarToggleBtn');
+    const sidebarBackdrop = $('sidebarBackdrop');
     if (sidebarToggleBtn) sidebarToggleBtn.addEventListener('click', openSidebar);
     if (sidebarBackdrop) sidebarBackdrop.addEventListener('click', closeSidebar);
 
-    // Profile Edit
-    editProfileBtn.addEventListener('click', () => {
-      inputProfileName.value = localStorage.getItem('temp_notes_profile_name') || 'Friend';
-      profileModal.classList.add('show');
-      inputProfileName.focus();
-    });
+    // Profile Modal
+    const editProfileBtn = $('editProfileBtn');
+    const profileModal = $('profileModal');
+    const closeProfileModalBtn = $('closeProfileModalBtn');
+    const cancelProfileBtn = $('cancelProfileBtn');
+    const profileForm = $('profileForm');
+    const inputProfileName = $('inputProfileName');
 
-    closeProfileModalBtn.addEventListener('click', () => profileModal.classList.remove('show'));
-    cancelProfileBtn.addEventListener('click', () => profileModal.classList.remove('show'));
-    profileModal.addEventListener('click', (e) => {
-      if (e.target === profileModal) profileModal.classList.remove('show');
-    });
+    if (editProfileBtn) {
+      editProfileBtn.addEventListener('click', () => {
+        if (inputProfileName) inputProfileName.value = localStorage.getItem('temp_notes_profile_name') || 'Friend';
+        if (profileModal) profileModal.classList.add('show');
+        if (inputProfileName) inputProfileName.focus();
+      });
+    }
 
-    profileForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      saveProfile(inputProfileName.value);
-      profileModal.classList.remove('show');
-    });
+    if (closeProfileModalBtn) closeProfileModalBtn.addEventListener('click', () => profileModal.classList.remove('show'));
+    if (cancelProfileBtn) cancelProfileBtn.addEventListener('click', () => profileModal.classList.remove('show'));
+    if (profileModal) {
+      profileModal.addEventListener('click', (e) => {
+        if (e.target === profileModal) profileModal.classList.remove('show');
+      });
+    }
 
-    // Add / Edit Questions
-    addQuestionBtn.addEventListener('click', openAddModal);
-    emptyAddBtn.addEventListener('click', openAddModal);
-    editCurrentQBtn.addEventListener('click', openEditModal);
-    closeModalBtn.addEventListener('click', closeQuestionModal);
-    cancelModalBtn.addEventListener('click', closeQuestionModal);
-    deleteQuestionBtn.addEventListener('click', handleDeleteQuestion);
-    questionForm.addEventListener('submit', handleSaveQuestion);
-    questionEditModal.addEventListener('click', (e) => {
-      if (e.target === questionEditModal) closeQuestionModal();
-    });
+    if (profileForm) {
+      profileForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        if (inputProfileName) saveProfile(inputProfileName.value);
+        if (profileModal) profileModal.classList.remove('show');
+      });
+    }
 
-    // Navigation Buttons
-    prevBtn.addEventListener('click', () => {
-      if (currentIndex > 0) selectQuestion(currentIndex - 1);
-    });
-    nextBtn.addEventListener('click', () => {
-      if (currentIndex < questions.length - 1) selectQuestion(currentIndex + 1);
-    });
+    // Add / Edit Buttons
+    const addQuestionBtn = $('addQuestionBtn');
+    const emptyAddBtn = $('emptyAddBtn');
+    const editCurrentQBtn = $('editCurrentQBtn');
+    const closeModalBtn = $('closeModalBtn');
+    const cancelModalBtn = $('cancelModalBtn');
+    const deleteQuestionBtn = $('deleteQuestionBtn');
+    const questionForm = $('questionForm');
+    const questionEditModal = $('questionEditModal');
 
-    // Mark Done
-    markDoneCheckbox.addEventListener('change', toggleMarkDone);
-    resetProgressBtn.addEventListener('click', resetProgress);
+    if (addQuestionBtn) addQuestionBtn.addEventListener('click', window.openAddQuestionModal);
+    if (emptyAddBtn) emptyAddBtn.addEventListener('click', window.openAddQuestionModal);
+    if (editCurrentQBtn) editCurrentQBtn.addEventListener('click', window.openEditQuestionModal);
+    if (closeModalBtn) closeModalBtn.addEventListener('click', closeQuestionModal);
+    if (cancelModalBtn) cancelModalBtn.addEventListener('click', closeQuestionModal);
+    if (deleteQuestionBtn) deleteQuestionBtn.addEventListener('click', handleDeleteQuestion);
+    if (questionForm) questionForm.addEventListener('submit', handleSaveQuestion);
+
+    if (questionEditModal) {
+      questionEditModal.addEventListener('click', (e) => {
+        if (e.target === questionEditModal) closeQuestionModal();
+      });
+    }
+
+    // Nav Buttons
+    const prevBtn = $('prevBtn');
+    const nextBtn = $('nextBtn');
+    if (prevBtn) {
+      prevBtn.addEventListener('click', () => {
+        if (currentIndex > 0) selectQuestion(currentIndex - 1);
+      });
+    }
+    if (nextBtn) {
+      nextBtn.addEventListener('click', () => {
+        if (currentIndex < questions.length - 1) selectQuestion(currentIndex + 1);
+      });
+    }
+
+    // Progress
+    const markDoneCheckbox = $('markDoneCheckbox');
+    const resetProgressBtn = $('resetProgressBtn');
+    if (markDoneCheckbox) markDoneCheckbox.addEventListener('change', toggleMarkDone);
+    if (resetProgressBtn) resetProgressBtn.addEventListener('click', resetProgress);
 
     // Export Modal
-    exportCodeBtn.addEventListener('click', openExportModal);
-    closeExportModalBtn.addEventListener('click', () => exportModal.classList.remove('show'));
-    exportModal.addEventListener('click', (e) => {
-      if (e.target === exportModal) exportModal.classList.remove('show');
-    });
-    copyExportCodeBtn.addEventListener('click', () => {
-      navigator.clipboard.writeText(exportCodeTextarea.value).then(() => {
-        showToast('Code copied to clipboard');
+    const exportCodeBtn = $('exportCodeBtn');
+    const exportModal = $('exportModal');
+    const closeExportModalBtn = $('closeExportModalBtn');
+    const copyExportCodeBtn = $('copyExportCodeBtn');
+    const exportCodeTextarea = $('exportCodeTextarea');
+
+    if (exportCodeBtn) exportCodeBtn.addEventListener('click', openExportModal);
+    if (closeExportModalBtn && exportModal) closeExportModalBtn.addEventListener('click', () => exportModal.classList.remove('show'));
+    if (exportModal) {
+      exportModal.addEventListener('click', (e) => {
+        if (e.target === exportModal) exportModal.classList.remove('show');
       });
-    });
+    }
+    if (copyExportCodeBtn && exportCodeTextarea) {
+      copyExportCodeBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(exportCodeTextarea.value).then(() => {
+          showToast('Code copied to clipboard');
+        });
+      });
+    }
 
-    // Search Input
-    searchInput.addEventListener('input', (e) => {
-      searchQuery = e.target.value.trim();
-      clearSearchBtn.classList.toggle('show', searchQuery.length > 0);
-      renderQuestionList();
-    });
+    // Search
+    const searchInput = $('searchInput');
+    const clearSearchBtn = $('clearSearchBtn');
 
-    clearSearchBtn.addEventListener('click', () => {
-      searchInput.value = '';
-      searchQuery = '';
-      clearSearchBtn.classList.remove('show');
-      renderQuestionList();
-      searchInput.focus();
-    });
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        searchQuery = e.target.value.trim();
+        if (clearSearchBtn) clearSearchBtn.classList.toggle('show', searchQuery.length > 0);
+        renderQuestionList();
+      });
+    }
 
-    // Keyboard Shortcuts
+    if (clearSearchBtn && searchInput) {
+      clearSearchBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        searchQuery = '';
+        clearSearchBtn.classList.remove('show');
+        renderQuestionList();
+        searchInput.focus();
+      });
+    }
+
+    // Keyboard navigation
     document.addEventListener('keydown', (e) => {
       if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
         if (e.key === 'Escape') {
-          if (questionEditModal.classList.contains('show')) closeQuestionModal();
-          if (profileModal.classList.contains('show')) profileModal.classList.remove('show');
-          if (exportModal.classList.contains('show')) exportModal.classList.remove('show');
-          searchInput.blur();
+          if (questionEditModal && questionEditModal.classList.contains('show')) closeQuestionModal();
+          if (profileModal && profileModal.classList.contains('show')) profileModal.classList.remove('show');
+          if (exportModal && exportModal.classList.contains('show')) exportModal.classList.remove('show');
+          if (searchInput) searchInput.blur();
         }
         return;
       }
@@ -632,29 +696,47 @@ const notesData = {
       } else if (e.key === 'ArrowRight') {
         if (currentIndex < questions.length - 1) selectQuestion(currentIndex + 1);
       } else if (e.key === '/') {
-        e.preventDefault();
-        searchInput.focus();
+        if (searchInput) {
+          e.preventDefault();
+          searchInput.focus();
+        }
       }
     });
 
     // Share & Print
-    copyShareBtn.addEventListener('click', () => {
-      navigator.clipboard.writeText(window.location.href).then(() => {
-        showToast('Link copied to clipboard');
-      }).catch(() => {
-        showToast('Link copied');
+    const copyShareBtn = $('copyShareBtn');
+    const printBtn = $('printBtn');
+
+    if (copyShareBtn) {
+      copyShareBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(window.location.href).then(() => {
+          showToast('Link copied to clipboard');
+        }).catch(() => {
+          showToast('Link copied');
+        });
       });
-    });
+    }
 
-    printBtn.addEventListener('click', () => {
-      window.print();
-    });
+    if (printBtn) {
+      printBtn.addEventListener('click', () => {
+        window.print();
+      });
+    }
 
-    // Hash change
     window.addEventListener('hashchange', loadQuestionFromHash);
   }
 
-  // Run on DOM ready
+  // --- Init ---
+  function init() {
+    loadProfile();
+    loadQuestions();
+    renderCategoryFilters();
+    renderQuestionList();
+    updateProgress();
+    loadQuestionFromHash();
+    setupEventListeners();
+  }
+
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
