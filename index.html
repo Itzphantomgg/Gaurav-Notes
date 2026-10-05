@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Study Notes & Question Bank</title>
+  <meta name="description" content="Clean, responsive notes and question reference site ready for GitHub Pages." />
+
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  
+  <!-- Markdown parser & Syntax Highlighter -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-theme" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body data-theme="dark">
+  <div class="app-layout">
+    <!-- Mobile Header -->
+    <header class="mobile-topbar">
+      <button id="sidebarToggleBtn" class="icon-btn" aria-label="Toggle Navigation">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+      </button>
+      <div class="mobile-brand">
+        <span class="subject-tag" id="mobileSubjectTag">Subject 1</span>
+        <span class="brand-title" id="mobileBrandTitle">Notes</span>
+      </div>
+      <button id="themeToggleMobile" class="icon-btn" aria-label="Toggle Theme">
+        <span class="theme-icon">🌙</span>
+      </button>
+    </header>
+
+    <!-- Sidebar Backdrop for Mobile -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand">
+          <div class="brand-icon">📚</div>
+          <div>
+            <h1 class="brand-name" id="sidebarSubjectTitle">Subject Notes</h1>
+            <p class="brand-subtitle" id="sidebarSubjectSubtitle">Quick Reference & Q&A</p>
+          </div>
+        </div>
+        <button id="themeToggle" class="icon-btn desktop-only" title="Toggle Dark/Light Mode">
+          <span class="theme-icon">🌙</span>
+        </button>
+      </div>
+
+      <!-- Quick Question Pill Scroller (Grid / Quick Jump) -->
+      <div class="quick-nav-section">
+        <div class="section-label">Quick Jump</div>
+        <div class="quick-pill-grid" id="quickPillsContainer">
+          <!-- Populated by JS: Q.1, Q.2, etc. -->
+        </div>
+      </div>
+
+      <!-- Search & Filter -->
+      <div class="search-box">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" id="searchInput" placeholder="Search questions or topics... (Press /)" />
+        <button id="clearSearchBtn" class="clear-search-btn" title="Clear search">✕</button>
+      </div>
+
+      <!-- Category Filter Pills -->
+      <div class="category-filters" id="categoryFilters">
+        <button class="filter-pill active" data-category="all">All</button>
+      </div>
+
+      <!-- Detailed Question List -->
+      <div class="nav-list-wrapper">
+        <div class="list-stats" id="listStats">Showing 0 questions</div>
+        <nav class="question-list" id="questionList" aria-label="Questions list">
+          <!-- Populated dynamically by JS -->
+        </nav>
+      </div>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <div class="progress-wrap">
+          <div class="progress-label">
+            <span>Completed</span>
+            <span id="progressText">0 / 0</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+          </div>
+        </div>
+        <div class="footer-links">
+          <button id="openEditorBtn" class="text-link-btn">✏️ Add / Edit Notes</button>
+          <button id="resetProgressBtn" class="text-link-btn">↺ Reset Marks</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Quick Header Bar -->
+      <div class="top-bar">
+        <div class="top-nav-pills" id="topNavPills">
+          <!-- Horizontal scrollable pills: Q.1, Q.2, Q.3 ... -->
+        </div>
+      </div>
+
+      <div class="content-scroll">
+        <article class="note-card" id="noteCard">
+          <!-- Active Question Meta Header -->
+          <div class="note-meta-bar">
+            <div class="meta-left">
+              <span class="badge question-badge" id="currentQBadge">Q.1</span>
+              <span class="badge topic-badge" id="currentTopicBadge">Topic</span>
+              <span class="badge level-badge" id="currentLevelBadge">Important</span>
+            </div>
+            <div class="meta-right">
+              <label class="completion-toggle" title="Mark this question as learned">
+                <input type="checkbox" id="markDoneCheckbox" />
+                <span class="checkmark">✓</span>
+                <span class="toggle-text">Mark as Done</span>
+              </label>
+              <button id="copyShareBtn" class="action-btn" title="Copy direct link to this question">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+                <span>Share</span>
+              </button>
+              <button id="printBtn" class="action-btn" title="Print this note">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                <span>Print</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Question Title -->
+          <h2 class="question-heading" id="questionHeading">Loading Question...</h2>
+
+          <div class="divider"></div>
+
+          <!-- Answer & Notes Body -->
+          <div class="answer-container markdown-body" id="answerContainer">
+            <!-- Rendered Markdown Content -->
+          </div>
+
+          <!-- Question Footer Navigation -->
+          <footer class="note-footer">
+            <button class="nav-btn prev-btn" id="prevBtn" title="Previous Question (Left Arrow)">
+              <span class="nav-arrow">←</span>
+              <div class="nav-text-block">
+                <span class="nav-sub">Previous</span>
+                <span class="nav-label" id="prevBtnLabel">Q.1</span>
+              </div>
+            </button>
+
+            <div class="keyboard-hints desktop-only">
+              <span>Use keys <kbd>←</kbd> and <kbd>→</kbd> to navigate</span>
+            </div>
+
+            <button class="nav-btn next-btn" id="nextBtn" title="Next Question (Right Arrow)">
+              <div class="nav-text-block">
+                <span class="nav-sub">Next</span>
+                <span class="nav-label" id="nextBtnLabel">Q.2</span>
+              </div>
+              <span class="nav-arrow">→</span>
+            </button>
+          </footer>
+        </article>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal for How to Edit / Add Notes / Export -->
+  <div class="modal-overlay" id="editorModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>How to Add or Edit Your Notes</h3>
+        <button class="modal-close" id="closeEditorBtn">✕</button>
+      </div>
+      <div class="modal-body">
+        <p>Your notes are stored in <code>questions.js</code>. You can easily add as many questions as you like with full <strong>Markdown</strong>, code blocks, lists, and tables.</p>
+        
+        <h4>Option 1: Edit <code>questions.js</code> directly (Recommended)</h4>
+        <p>Open <code>questions.js</code> in any editor and add new entries to the <code>questions</code> array:</p>
+        <pre><code class="language-javascript">{
+  id: 3,
+  badge: "Q.3",
+  title: "Explain the difference between TCP and UDP?",
+  category: "Networking",
+  tag: "Important",
+  answer: `### TCP vs UDP\n\n- **TCP**: Connection-oriented...\n- **UDP**: Connectionless...`
+}</code></pre>
+
+        <h4>Option 2: GitHub Pages Hosting</h4>
+        <p>This site is 100% static with no build steps! To host on GitHub:</p>
+        <ol>
+          <li>Push these files to a GitHub repository.</li>
+          <li>Go to <strong>Settings</strong> &rarr; <strong>Pages</strong>.</li>
+          <li>Under <em>Build and deployment</em>, set Source to <strong>Deploy from a branch</strong> and select <strong>main</strong> / <code>(root)</code>.</li>
+          <li>Click <strong>Save</strong>. Your website will be live in 60 seconds!</li>
+        </ol>
+      </div>
+      <div class="modal-footer">
+        <button class="action-btn primary" id="gotItBtn">Got It</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toastNotification">Copied to clipboard!</div>
+
+  <!-- Scripts -->
+  <script src="questions.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
